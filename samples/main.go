@@ -8,7 +8,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
-	"programming-kubernetes/pkg"
+	"programming-kubernetes/samples/pkg"
 )
 
 func main() {
@@ -39,7 +39,7 @@ func main() {
 	// 5. informer.Start
 	stopCh := make(chan struct{})
 	factory.Start(stopCh)
-	factory.WaitForCacheSync(stopCh) //等待所有的数据同步到本地
+	factory.WaitForCacheSync(stopCh) // 等待所有的数据同步到本地
 
 	controller.Run(stopCh)
 }

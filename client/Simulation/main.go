@@ -4,14 +4,13 @@ import (
 	"fmt"
 	"log"
 
-	// "programming-kubernetes/pkg"
-
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/workqueue"
+	// "programming-kubernetes/pkg"
 )
 
 func main() {

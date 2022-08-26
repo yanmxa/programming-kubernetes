@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "lifecycle-demo"
+spec:
+  containers:
+  - name: lifecycle-demo-container
+    image: quay.io/myan/lifecycle:latest
+    lifecycle:
+      postStart:
+        exec:
+          command: ["/bin/sh", "-c", "/usr/local/bin/poststart.sh > /proc/1/fd/1"]
+      prestop:
+        exec:
+          command: ["/bin/sh", "-c", "/usr/local/bin/prestop.sh > /proc/1/fd/1"]
