@@ -2,14 +2,24 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: "lifecycle-demo"
+  finalizers:
+  - kubernetes
 spec:
+  terminationGracePeriodSeconds: 10
   containers:
   - name: lifecycle-demo-container
     image: quay.io/myan/lifecycle:latest
     lifecycle:
       postStart:
         exec:
-          command: ["/bin/sh", "-c", "/usr/local/bin/poststart.sh > /proc/1/fd/1"]
-      prestop:
+          command: ["sh", "-c", "/bin/poststart.sh > /proc/1/fd/1"]
+      preStop:
         exec:
-          command: ["/bin/sh", "-c", "/usr/local/bin/prestop.sh > /proc/1/fd/1"]
+          command: ["sh", "-c", "/bin/prestop.sh > /proc/1/fd/1"]
+    volumeMounts:
+      - name: hooks
+        mountPath: /usr/share/
+  volumes:
+    - name: hooks
+      hostPath:
+        path: /usr/hooks/
