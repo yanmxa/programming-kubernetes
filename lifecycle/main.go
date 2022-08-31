@@ -1,62 +1,59 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 )
 
 func main() {
 	signalChan := make(chan os.Signal, 1)
-	signal.Notify(signalChan, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT, syscall.SIGSEGV, syscall.SIGALRM, syscall.SIGKILL)
+	signal.Notify(signalChan, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT, syscall.SIGSEGV,
+		syscall.SIGALRM)
 
-	timeStr := time.Now().Format("2006-01-02 15:04:05")
-	fmt.Printf("# [ %s ] main container start running \n", timeStr)
+	fmt.Printf("# [ %s ] main container start running \n", time.Now().Format("2006-01-02 15:04:05"))
+
+	cfg, err := rest.InClusterConfig()
+	if err != nil {
+		fmt.Printf("failed to get kube config: %v", err)
+		return
+	}
+
+	clientset, err := kubernetes.NewForConfig(cfg)
+	if err != nil {
+		fmt.Printf("failed to get kube client: %v", err)
+		return
+	}
 
 	ticker := time.NewTicker(time.Second)
 	count := 0
-	// loop:
+loop:
 	for {
 		select {
 		case sig := <-signalChan:
-			timeStr := time.Now().Format("2006-01-02 15:04:05")
-			fmt.Printf("# [ %s ] receive signal: %s => %d \n", timeStr, sig.String(), sig)
+			fmt.Printf("# [ %s ] receive signal: %s => %d \n", time.Now().Format("2006-01-02 15:04:05"), sig.String(), sig)
 			count = 0
-			// break loop
+			break loop
 		case <-ticker.C:
 			count++
 			fmt.Printf(" #(%d) ", count)
 		}
 	}
-	// time.Sleep(5 * time.Second)
-	// timeStr = time.Now().Format("2006-01-02 15:04:05")
-	// fmt.Printf("# [ %s ] main container finished \n", timeStr)
+
+	fmt.Printf("# [ %s ] graceful shudown >>>>>>>>>>>>>>>>>>> \n", time.Now().Format("2006-01-02 15:04:05"))
+	for i := 0; i < 10; i++ {
+		time.Sleep(1 * time.Second)
+		count++
+		sa, _ := clientset.CoreV1().ServiceAccounts("default").Get(context.TODO(), "default", metav1.GetOptions{})
+		fmt.Printf(" #(%d) => service account: %s \n", count, sa.Name)
+	}
+
+	fmt.Printf("# [ %s ] main container finished \n", time.Now().Format("2006-01-02 15:04:05"))
 }
-
-// journalctl -f -u kubelet
-// kubectl create configmap cm --from-literal=special.how=very --from-literal=special.type=charm
-// func getConfigMap() string {
-// 	config, err := clientcmd.BuildConfigFromFlags("", clientcmd.RecommendedHomeFile)
-// 	if err != nil {
-// 		inClusterConfig, err := rest.InClusterConfig()
-// 		if err != nil {
-// 			log.Fatalln("can't get config")
-// 		}
-// 		config = inClusterConfig
-// 	}
-
-// 	clientSet, err := kubernetes.NewForConfig(config)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-
-// 	configMapClient := clientSet.CoreV1().ConfigMaps("default")
-// 	configmap, err := configMapClient.Get(context.Background(), "cm", metav1.GetOptions{})
-// 	if err != nil {
-// 		fmt.Printf("get error message %s", err.Error())
-// 	}
-// 	name := configmap.GetName()
-// 	return name
-// }
