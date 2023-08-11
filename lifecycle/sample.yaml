@@ -3,7 +3,7 @@ kind: Pod
 metadata:
   name: "lifecycle-demo"
 spec:
-  terminationGracePeriodSeconds: 8
+  terminationGracePeriodSeconds: 5
   containers:
   - name: lifecycle-demo-container
     image: quay.io/myan/lifecycle:latest
@@ -21,8 +21,6 @@ spec:
     - name: hooks
       hostPath:
         path: /usr/hooks/
-
-
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1

@@ -7,7 +7,7 @@ time=$(date "+%Y-%m-%d %H:%M:%S")
 echo "====================================== prestop start: [ $time ] ================================================"
 echo "start time: $time" > /usr/share/prestop
 
-second=5
+second=10
 while [[ $second -ne 0 ]]; do
   sleep 1
   time=$(date "+%Y-%m-%d %H:%M:%S")
